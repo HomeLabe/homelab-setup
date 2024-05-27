@@ -47,5 +47,5 @@ Les contributions sont les bienvenues ! Si vous avez des améliorations, des cor
 
 ---
 
-**Auteur** : OMALK Mehdi
-**Contact** : Mehdi@omalk.com
+- **Auteur** : OMALK Mehdi
+- **Contact** : Mehdi@omalk.com
