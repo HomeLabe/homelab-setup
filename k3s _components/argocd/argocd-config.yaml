@@ -1,0 +1,102 @@
+# argocd-config.yaml
+
+# Service pour ArgoCD Server
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80             # Port HTTP exposé
+      targetPort: 8080     # Port cible sur lequel ArgoCD écoute
+      protocol: TCP
+      name: http
+    - port: 443            # Port HTTPS exposé
+      targetPort: 8080     # Port cible sur lequel ArgoCD écoute
+      protocol: TCP
+      name: https
+  selector:
+    app.kubernetes.io/name: argocd-server  # Sélecteur pour associer ce service aux pods ArgoCD server
+
+---
+
+# ConfigMap pour la configuration RBAC d'ArgoCD
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/component: server
+    app.kubernetes.io/instance: argocd
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: argocd-rbac-cm
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/version: v2.11.1
+    helm.sh/chart: argo-cd-6.10.2
+data:
+  policy.csv: |
+    p, role:admin, applications, *, */*, allow       # Permissions pour le rôle admin
+    p, role:admin, clusters, get, *, allow           # Permissions pour le rôle admin
+    p, role:admin, repositories, get, *, allow       # Permissions pour le rôle admin
+    p, role:admin, repositories, create, *, allow    # Permissions pour le rôle admin
+    p, role:admin, repositories, update, *, allow    # Permissions pour le rôle admin
+    p, role:admin, repositories, delete, *, allow    # Permissions pour le rôle admin
+    p, role:admin, accounts, get, *, allow           # Permissions pour le rôle admin
+    p, role:admin, accounts, create, *, allow        # Permissions pour le rôle admin
+    p, role:admin, accounts, update, *, allow        # Permissions pour le rôle admin
+    p, role:admin, accounts, delete, *, allow        # Permissions pour le rôle admin
+    g, <ENTER_YOUR_USER>, role:admin                 # Assignation du rôle admin au groupe <ENTER>
+  policy.default: role:readonly                      # Rôle par défaut en lecture seule
+
+---
+
+# Ingress pour exposer le service ArgoCD
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  namespace: argocd
+  annotations:
+    kubernetes.io/ingress.class: nginx               # Classe d'ingress utilisée
+    nginx.ingress.kubernetes.io/ssl-redirect: "true" # Redirection HTTP vers HTTPS
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS" # Utilisation du protocole HTTPS pour le backend
+spec:
+  rules:
+  - host: <DOMAINNAME>                               # Nom de domaine pour accéder à ArgoCD
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server                      # Nom du service ArgoCD
+            port:
+              number: 80                             # Port utilisé pour accéder au service
+  tls:
+  - hosts:
+    - <DOMAINNAME>                                   # Nom de domaine pour la configuration TLS
+    secretName: argocd-tls                           # Nom du secret TLS
+
+---
+
+# ConfigMap pour la configuration générale d'ArgoCD
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/component: server
+    app.kubernetes.io/instance: argocd
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/version: v2.11.1
+    helm.sh/chart: argo-cd-6.10.2
+data:
+  accounts.<USERNAME>: login                        # Compte utilisateur pour la connexion
+  accounts.admin: null
+  admin.enabled: "false"                            # Désactivation de l'accès admin

@@ -1,0 +1,22 @@
+# Définition d'un pool d'adresses IP que MetalLB peut utiliser pour les LoadBalancers dans le cluster.
+  apiVersion: metallb.io/v1beta1  # Spécifie la version de l'API de MetalLB utilisée.
+  kind: IPAddressPool            # Type de ressource, ici un pool d'adresses IP.
+  metadata:
+    name: picluster-pool         # Nom du pool d'adresses, utilisé pour identifier le pool dans le cluster.
+    namespace: metallb           # Espace de nommage où le pool est déployé, ici 'metallb'.
+  spec:
+    addresses:
+    - 10.0.0.60-10.0.0.75      # Range d'adresses IP disponibles pour l'attribution aux services.
+
+---
+  # L2 configuration
+  # Configuration pour l'annonce de niveau 2 (L2), utilisée pour la découverte de routeurs dans le réseau local.
+  apiVersion: metallb.io/v1beta1  # Spécifie la version de l'API de MetalLB utilisée.
+  kind: L2Advertisement          # Type de ressource, ici une annonce de niveau 2.
+  metadata:
+    name: l2advertisement       # Nom de la configuration L2, identifie cette annonce spécifique dans le cluster.
+    namespace: metallb           # Espace de nommage pour cette configuration, ici 'metallb'.
+  spec:
+    ipAddressPools:
+    - picluster-pool             # Référence au pool d'adresses IP défini ci-dessus, utilisé par cette configuration L2.
+
