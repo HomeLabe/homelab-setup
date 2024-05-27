@@ -20,9 +20,9 @@ Assurez-vous de définir les variables suivantes dans votre fichier `variables.t
 
 Assurez-vous de définir votre provider suivantes dans votre fichier `provider.tf`:
 
-  `pm_api_url`: URL de votre serveur Proxmox
-  `pm_api_token_id`: Valeur de l'ID de votre Token Proxmox sous la forme de `username>@pam!<tokenId>`
-  `pm_api_token_secret`: Valeur du secret de votre Token Proxmox
+- `pm_api_url`: URL de votre serveur Proxmox
+- `pm_api_token_id`: Valeur de l'ID de votre Token Proxmox sous la forme de `username>@pam!<tokenId>`
+- `pm_api_token_secret`: Valeur du secret de votre Token Proxmox
 
 ## Usage
 
