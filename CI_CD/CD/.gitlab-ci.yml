@@ -1,0 +1,24 @@
+stages:
+  - build
+
+# Job de build pour mettre à jour l'image Docker dans les manifests
+update_image:
+  stage: build
+  before_script:
+    - wget https://github.com/mikefarah/yq/releases/download/v4.9.8/yq_linux_amd64 -O /usr/bin/yq
+    - chmod +x /usr/bin/yq
+
+  script:
+    # Mise à jour de l'image Docker dans le fichier kustomization.yaml pour production
+    - yq e ".images[0].newTag = \"$VERSION\"" -i apps/release-web/overlays/production/kustomization.yaml
+    - git config --global user.email "example@example.com" 
+    # Ajout des fichiers modifiés à l'index git
+    - git add apps/release-web/overlays/production/kustomization.yaml
+    # Commit des modifications avec un message
+    - git commit -m "Update Docker image to latest"
+    # Pousser les modifications sur la branche 'main'
+    - git branch
+    - git remote set-url origin https://oauth2:${CI_JOB_TOKEN}@gitlab.com/your_project/DeployApplications.git 
+    - git push origin HEAD:main
+  only:
+    - triggers
